@@ -1,23 +1,35 @@
+mod solvers;
+
+use clap::Parser;
 use std::io::{self, BufRead};
-use std::collections::BinaryHeap;
 
-fn main() {
+use solvers::{base::AocSolver, day01, day02, day03, day04};
+
+#[derive(Parser, Debug)]
+#[command(name = "aoc2022")]
+#[command(author = "Jan Gosmann <jan@hyper-world.de>")]
+#[command(about = "Solve Advent of Code 2022 puzzles.")]
+struct Args {
+    day: u8,
+}
+
+fn main() -> Result<(), anyhow::Error> {
+    let args = Args::parse();
+
     let stdin = io::stdin();
-    
-    let mut sorted_calories = BinaryHeap::new();
-    let mut calories_carried: u64 = 0;
+    let mut input = stdin.lock().lines().map(Result::unwrap);
 
-    for line in stdin.lock().lines().map(Result::unwrap) {
-        if line.trim().is_empty() {
-            sorted_calories.push(calories_carried);
-            calories_carried = 0;
-        } else {
-            calories_carried += line.parse::<u64>().unwrap();
-        }
+    let solver: Box<dyn AocSolver> = match args.day {
+        1 => Box::new(day01::Solver::new(&mut input)?),
+        2 => Box::new(day02::Solver::new(&mut input)?),
+        3 => Box::new(day03::Solver::new(&mut input)?),
+        4 => Box::new(day04::Solver::new(&mut input)?),
+        _ => panic!("invalid day"),
+    };
+    let solution = solver.solve()?;
+    println!("{} {}", solution.part1.name, solution.part1.answer);
+    if let Some(part2) = solution.part2 {
+        println!("{} {}", part2.name, part2.answer);
     }
-    sorted_calories.push(calories_carried);
-    
-    let max_calories_carried = sorted_calories.pop().unwrap();
-    println!("{}", max_calories_carried);
-    println!("{}", max_calories_carried + sorted_calories.pop().unwrap() + sorted_calories.pop().unwrap());
+    Ok(())
 }

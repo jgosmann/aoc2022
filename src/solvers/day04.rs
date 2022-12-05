@@ -1,9 +1,6 @@
 use std::str::FromStr;
 
-use super::{
-    base::{AocAnswer, AocPartSolution, AocSolution, AocSolver},
-    error::InputParseError,
-};
+use super::{base::AocSolver, error::InputParseError};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Range<T> {
@@ -48,7 +45,7 @@ pub struct Solver {
     range_pairs: Vec<(Range<u32>, Range<u32>)>,
 }
 
-impl AocSolver for Solver {
+impl AocSolver<usize> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
     where
         Self: Sized,
@@ -66,27 +63,21 @@ impl AocSolver for Solver {
         })
     }
 
-    fn solve(&self) -> anyhow::Result<super::base::AocSolution> {
-        Ok(AocSolution {
-            part1: AocPartSolution {
-                name: "Assignments fully contained in partner's assignment:",
-                answer: self
-                    .range_pairs
-                    .iter()
-                    .filter(|&pair| {
-                        pair.0.includes_fully(&pair.1) || pair.1.includes_fully(&pair.0)
-                    })
-                    .count() as AocAnswer,
-            },
-            part2: Some(AocPartSolution {
-                name: "Assigments overlapping with partner:",
-                answer: self
-                    .range_pairs
-                    .iter()
-                    .filter(|&pair| pair.0.overlaps(&pair.1))
-                    .count() as AocAnswer,
-            }),
-        })
+    fn solve_part1(&self) -> anyhow::Result<usize> {
+        Ok(self
+            .range_pairs
+            .iter()
+            .filter(|&pair| pair.0.includes_fully(&pair.1) || pair.1.includes_fully(&pair.0))
+            .count())
+    }
+
+    fn solve_part2(&self) -> anyhow::Result<Option<usize>> {
+        Ok(Some(
+            self.range_pairs
+                .iter()
+                .filter(|&pair| pair.0.overlaps(&pair.1))
+                .count(),
+        ))
     }
 }
 
@@ -119,6 +110,6 @@ mod tests {
             6-6,4-6
             2-6,4-8
         ";
-        test_example_input::<Solver>(input, 2, Some(4));
+        test_example_input::<Solver, _>(input, 2, Some(4));
     }
 }

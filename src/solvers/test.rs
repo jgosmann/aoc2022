@@ -1,17 +1,14 @@
-use super::base::{AocAnswer, AocSolver};
+use super::base::AocSolver;
 
-pub fn test_example_input<Solver: AocSolver>(
+pub fn test_example_input<Solver: AocSolver<T>, T: std::fmt::Debug + Eq>(
     input: &str,
-    part1_answer: AocAnswer,
-    part2_answer: Option<AocAnswer>,
+    part1_answer: T,
+    part2_answer: Option<T>,
 ) {
-    let mut input = input.split('\n').map(|line| String::from(line.trim()));
-    let solution = Solver::new(&mut input).unwrap().solve().unwrap();
-    assert_eq!(solution.part1.answer, part1_answer);
+    let mut input = input.split('\n').map(String::from);
+    let solver = Solver::new(&mut input).unwrap();
+    assert_eq!(solver.solve_part1().unwrap(), part1_answer);
     if let Some(part2_answer) = part2_answer {
-        assert_eq!(
-            solution.part2.expect("missing part 2 solution").answer,
-            part2_answer
-        );
+        assert_eq!(solver.solve_part2().unwrap(), Some(part2_answer));
     }
 }

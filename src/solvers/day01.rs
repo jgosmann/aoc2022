@@ -1,4 +1,4 @@
-use super::base::{AocPartSolution, AocSolution, AocSolver};
+use super::base::AocSolver;
 
 type CaloryCount = u64;
 
@@ -45,7 +45,7 @@ pub struct Solver {
     top_k_calories: TopK<CaloryCount, 3>,
 }
 
-impl AocSolver for Solver {
+impl AocSolver<u64> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self> {
         let mut top_k_calories = TopK::new();
         let mut calories_carried: u64 = 0;
@@ -63,17 +63,12 @@ impl AocSolver for Solver {
         Ok(Self { top_k_calories })
     }
 
-    fn solve(&self) -> anyhow::Result<AocSolution> {
-        Ok(AocSolution {
-            part1: AocPartSolution {
-                name: "The Elf, carrying the most calories, carries:",
-                answer: *self.top_k_calories.peek().unwrap(),
-            },
-            part2: Some(AocPartSolution {
-                name: "The top three Elves are carrying:",
-                answer: self.top_k_calories.iter().sum(),
-            }),
-        })
+    fn solve_part1(&self) -> anyhow::Result<u64> {
+        Ok(self.top_k_calories.peek().copied().unwrap_or_default())
+    }
+
+    fn solve_part2(&self) -> anyhow::Result<Option<u64>> {
+        Ok(Some(self.top_k_calories.iter().sum::<u64>()))
     }
 }
 
@@ -100,6 +95,6 @@ mod tests {
 
             10000
         ";
-        test_example_input::<Solver>(input, 24000, Some(45000));
+        test_example_input::<Solver, _>(input, 24000, Some(45000));
     }
 }

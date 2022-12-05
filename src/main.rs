@@ -1,7 +1,11 @@
 mod solvers;
 
 use clap::Parser;
-use std::io::{self, BufRead};
+use std::{
+    fmt::Display,
+    io::{self, BufRead},
+    marker::PhantomData,
+};
 
 use solvers::{base::AocSolver, day01, day02, day03, day04};
 
@@ -13,23 +17,56 @@ struct Args {
     day: u8,
 }
 
+trait SolveDisplayable {
+    fn solve_part1(&self) -> anyhow::Result<Box<dyn Display>>;
+    fn solve_part2(&self) -> anyhow::Result<Option<Box<dyn Display>>>;
+}
+
+struct DisplayDecorator<S: AocSolver<T>, T> {
+    solver: S,
+    answer_type: PhantomData<T>,
+}
+
+impl<S: AocSolver<T>, T: Display + 'static> SolveDisplayable for DisplayDecorator<S, T> {
+    fn solve_part1(&self) -> anyhow::Result<Box<dyn Display>> {
+        Ok(Box::new(self.solver.solve_part1()?))
+    }
+
+    fn solve_part2(&self) -> anyhow::Result<Option<Box<dyn Display>>> {
+        if let Some(answer) = self.solver.solve_part2()? {
+            Ok(Some(Box::new(answer)))
+        } else {
+            Ok(None)
+        }
+    }
+}
+
+impl<S: AocSolver<T>, T> From<S> for DisplayDecorator<S, T> {
+    fn from(solver: S) -> Self {
+        Self {
+            solver,
+            answer_type: PhantomData,
+        }
+    }
+}
+
 fn main() -> Result<(), anyhow::Error> {
     let args = Args::parse();
 
     let stdin = io::stdin();
     let mut input = stdin.lock().lines().map(Result::unwrap);
 
-    let solver: Box<dyn AocSolver> = match args.day {
-        1 => Box::new(day01::Solver::new(&mut input)?),
-        2 => Box::new(day02::Solver::new(&mut input)?),
-        3 => Box::new(day03::Solver::new(&mut input)?),
-        4 => Box::new(day04::Solver::new(&mut input)?),
+    let solver: Box<dyn SolveDisplayable> = match args.day {
+        1 => Box::<DisplayDecorator<_, _>>::new(day01::Solver::new(&mut input)?.into()),
+        2 => Box::<DisplayDecorator<_, _>>::new(day02::Solver::new(&mut input)?.into()),
+        3 => Box::<DisplayDecorator<_, _>>::new(day03::Solver::new(&mut input)?.into()),
+        4 => Box::<DisplayDecorator<_, _>>::new(day04::Solver::new(&mut input)?.into()),
         _ => panic!("invalid day"),
     };
-    let solution = solver.solve()?;
-    println!("{} {}", solution.part1.name, solution.part1.answer);
-    if let Some(part2) = solution.part2 {
-        println!("{} {}", part2.name, part2.answer);
+
+    println!("{}", solver.solve_part1()?);
+    if let Some(part2) = solver.solve_part2()? {
+        println!("{}", part2);
     }
     Ok(())
 }

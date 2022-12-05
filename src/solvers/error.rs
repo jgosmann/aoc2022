@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, num::ParseIntError};
 
 #[derive(Debug)]
 pub struct InputParseError {
@@ -18,3 +18,9 @@ impl Display for InputParseError {
 }
 
 impl std::error::Error for InputParseError {}
+
+impl From<ParseIntError> for InputParseError {
+    fn from(err: ParseIntError) -> Self {
+        Self::new(err.to_string())
+    }
+}

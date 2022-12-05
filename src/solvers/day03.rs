@@ -1,4 +1,4 @@
-use super::base::{AocAnswer, AocPartSolution, AocSolution, AocSolver};
+use super::base::AocSolver;
 
 pub type ItemType = u8;
 pub type Priority = u8;
@@ -27,7 +27,7 @@ pub struct Solver {
     items: Vec<Vec<Item>>,
 }
 
-impl AocSolver for Solver {
+impl AocSolver<u64> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
     where
         Self: Sized,
@@ -44,23 +44,8 @@ impl AocSolver for Solver {
         })
     }
 
-    fn solve(&self) -> anyhow::Result<super::base::AocSolution> {
-        Ok(AocSolution {
-            part1: AocPartSolution {
-                name: "Sum of priorities (part 1):",
-                answer: self.solve_part1(),
-            },
-            part2: Some(AocPartSolution {
-                name: "Sum of priorities (part 2):",
-                answer: self.solve_part2(),
-            }),
-        })
-    }
-}
-
-impl Solver {
-    fn solve_part1(&self) -> AocAnswer {
-        let mut priority_sum: AocAnswer = 0;
+    fn solve_part1(&self) -> anyhow::Result<u64> {
+        let mut priority_sum: u64 = 0;
         for elf_items in &self.items {
             let mut seen: u64 = 0;
             for item in elf_items[0..elf_items.len() / 2].iter() {
@@ -69,16 +54,16 @@ impl Solver {
             for item in elf_items[elf_items.len() / 2..].iter() {
                 let priority = item.priority();
                 if seen & (1 << priority) != 0 {
-                    priority_sum += priority as AocAnswer;
+                    priority_sum += priority as u64;
                     break;
                 }
             }
         }
-        priority_sum
+        Ok(priority_sum)
     }
 
-    fn solve_part2(&self) -> AocAnswer {
-        let mut priority_sum: AocAnswer = 0;
+    fn solve_part2(&self) -> anyhow::Result<Option<u64>> {
+        let mut priority_sum: u64 = 0;
         let mut elf_iter = self.items.iter();
         while let Some(elf) = elf_iter.next() {
             let mut seen0 = [false; 2 * 26];
@@ -97,14 +82,14 @@ impl Solver {
                 for item in elf {
                     let priority = item.priority();
                     if seen1[priority as usize - 1] {
-                        priority_sum += priority as AocAnswer;
+                        priority_sum += priority as u64;
                         break;
                     }
                 }
             }
         }
 
-        priority_sum
+        Ok(Some(priority_sum))
     }
 }
 
@@ -123,6 +108,6 @@ mod tests {
             ttgJtRGJQctTZtZT
             CrZsJsPPZsGzwwsLwLmpwMDw
         ";
-        test_example_input::<Solver>(input, 157, Some(70));
+        test_example_input::<Solver, _>(input, 157, Some(70));
     }
 }

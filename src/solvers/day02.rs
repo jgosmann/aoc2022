@@ -1,9 +1,6 @@
 use std::str::Chars;
 
-use super::{
-    base::{AocPartSolution, AocSolution, AocSolver},
-    error::InputParseError,
-};
+use super::{base::AocSolver, error::InputParseError};
 
 #[derive(Clone, Copy, Debug)]
 enum Shape {
@@ -126,7 +123,7 @@ pub struct Solver {
     strategy_guide: StrategyGuide,
 }
 
-impl AocSolver for Solver {
+impl AocSolver<u64> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self> {
         Ok(Self {
             strategy_guide: input
@@ -141,17 +138,22 @@ impl AocSolver for Solver {
         })
     }
 
-    fn solve(&self) -> anyhow::Result<super::base::AocSolution> {
-        Ok(AocSolution {
-            part1: AocPartSolution {
-                name: "Score part 1:",
-                answer: self.solve_part1()?,
-            },
-            part2: Some(AocPartSolution {
-                name: "Score part 2:",
-                answer: self.solve_part2()?,
-            }),
-        })
+    fn solve_part1(&self) -> anyhow::Result<u64> {
+        let mut tally = Tally::new();
+        for (opponent, me) in &self.strategy_guide {
+            let me = Shape::try_from(*me)?;
+            tally.tally_round(*opponent, me);
+        }
+        Ok(tally.total())
+    }
+
+    fn solve_part2(&self) -> anyhow::Result<Option<u64>> {
+        let mut tally = Tally::new();
+        for (opponent, desired_outcome) in &self.strategy_guide {
+            let desired_outcome = Outcome::try_from(*desired_outcome)?;
+            tally.tally_round(*opponent, Self::choose_part2(*opponent, desired_outcome));
+        }
+        Ok(Some(tally.total()))
     }
 }
 
@@ -171,24 +173,6 @@ impl Solver {
         }
         let strategy = next_char()?;
         Ok((opponent, strategy))
-    }
-
-    fn solve_part1(&self) -> anyhow::Result<Score> {
-        let mut tally = Tally::new();
-        for (opponent, me) in &self.strategy_guide {
-            let me = Shape::try_from(*me)?;
-            tally.tally_round(*opponent, me);
-        }
-        Ok(tally.total())
-    }
-
-    fn solve_part2(&self) -> anyhow::Result<Score> {
-        let mut tally = Tally::new();
-        for (opponent, desired_outcome) in &self.strategy_guide {
-            let desired_outcome = Outcome::try_from(*desired_outcome)?;
-            tally.tally_round(*opponent, Self::choose_part2(*opponent, desired_outcome));
-        }
-        Ok(tally.total())
     }
 
     fn choose_part2(opponent: Shape, desired_outcome: Outcome) -> Shape {
@@ -230,6 +214,6 @@ mod tests {
             B X
             C Z
         ";
-        test_example_input::<Solver>(input, 15, Some(12));
+        test_example_input::<Solver, _>(input, 15, Some(12));
     }
 }

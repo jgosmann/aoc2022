@@ -7,7 +7,7 @@ use std::{
     marker::PhantomData,
 };
 
-use solvers::{base::AocSolver, day01, day02, day03, day04};
+use solvers::{base::AocSolver, day01, day02, day03, day04, day05};
 
 #[derive(Parser, Debug)]
 #[command(name = "aoc2022")]
@@ -61,6 +61,7 @@ fn main() -> Result<(), anyhow::Error> {
         2 => Box::<DisplayDecorator<_, _>>::new(day02::Solver::new(&mut input)?.into()),
         3 => Box::<DisplayDecorator<_, _>>::new(day03::Solver::new(&mut input)?.into()),
         4 => Box::<DisplayDecorator<_, _>>::new(day04::Solver::new(&mut input)?.into()),
+        5 => Box::<DisplayDecorator<_, _>>::new(day05::Solver::new(&mut input)?.into()),
         _ => panic!("invalid day"),
     };
 

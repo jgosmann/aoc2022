@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "bench", feature(test))]
+
 mod solvers;
 
 use clap::Parser;

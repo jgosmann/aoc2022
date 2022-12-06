@@ -2,7 +2,7 @@ use super::{base::AocSolver, error::InputParseError};
 use anyhow::anyhow;
 
 pub struct Solver {
-    datastream: Vec<u8>,
+    datastream: Vec<u32>,
 }
 
 impl AocSolver<usize> for Solver {
@@ -15,7 +15,11 @@ impl AocSolver<usize> for Solver {
                 .next()
                 .ok_or_else(|| InputParseError::new("missing input".into()))?
                 .as_bytes()
-                .to_vec(),
+                .iter()
+                .copied()
+                .filter(|&c| b'a' <= c && c <= b'z')
+                .map(|c| 1u32 << (c - b'a'))
+                .collect(),
         })
     }
 
@@ -36,7 +40,7 @@ impl Solver {
         for i in marker_length - 1..self.datastream.len() {
             let unique_char_count = self.datastream[i + 1 - marker_length..=i]
                 .iter()
-                .map(|c| 1u32 << (c - b'a'))
+                .copied()
                 .reduce(|accum, item| accum | item)
                 .expect("no item in window")
                 .count_ones();
@@ -78,5 +82,32 @@ mod tests {
             Solver::new(&mut input_iter).unwrap().solve_part2().unwrap(),
             Some(answer)
         );
+    }
+}
+
+#[cfg(all(feature = "bench", test))]
+mod bench {
+    extern crate test;
+    use std::fs;
+
+    use self::test::Bencher;
+    use super::*;
+
+    #[bench]
+    fn bench_part1(b: &mut Bencher) {
+        let input = fs::read_to_string("./day6").unwrap();
+        b.iter(|| {
+            let mut input_iter = vec![input.clone()].into_iter();
+            Solver::new(&mut input_iter).unwrap().solve_part1().unwrap();
+        });
+    }
+
+    #[bench]
+    fn bench_part2(b: &mut Bencher) {
+        let input = fs::read_to_string("./day6").unwrap();
+        b.iter(|| {
+            let mut input_iter = vec![input.clone()].into_iter();
+            Solver::new(&mut input_iter).unwrap().solve_part2().unwrap();
+        });
     }
 }

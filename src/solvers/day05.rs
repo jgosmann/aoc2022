@@ -43,10 +43,10 @@ impl TryFrom<&[&[u8]]> for Stacks {
             stacks.push(Vec::with_capacity(2 * lines.len()));
         }
         for line in lines.iter().rev() {
-            for i in 0..stacks.len() {
+            for (i, stack) in stacks.iter_mut().enumerate() {
                 let input_col = 4 * i + 1;
                 if input_col < line.len() && line[input_col] != b' ' {
-                    stacks[i].push(line[input_col]);
+                    stack.push(line[input_col]);
                 }
             }
         }
@@ -101,7 +101,7 @@ impl AocSolver<'_, String, String> for Solver {
             .skip_while(|line| !line.is_empty())
             .skip_while(|line| line.is_empty())
             .filter(|line| !line.is_empty())
-            .map(|line| Move::try_from(line))
+            .map(Move::try_from)
             .collect::<Result<Vec<Move>, _>>()?;
         Ok(Self {
             stacks: Stacks::try_from(&stack_def[0..stack_def.len() - 1])?,
@@ -112,7 +112,7 @@ impl AocSolver<'_, String, String> for Solver {
     fn solve_part1(&self) -> anyhow::Result<String> {
         let mut stacks = self.stacks.clone();
         for mv in self.moves.iter() {
-            stacks.apply_move(&mv);
+            stacks.apply_move(mv);
         }
         Ok(stacks.to_answer()?)
     }
@@ -120,7 +120,7 @@ impl AocSolver<'_, String, String> for Solver {
     fn solve_part2(&self) -> anyhow::Result<Option<String>> {
         let mut stacks = self.stacks.clone();
         for mv in self.moves.iter() {
-            stacks.apply_multicrate_move(&mv);
+            stacks.apply_multicrate_move(mv);
         }
         Ok(Some(stacks.to_answer()?))
     }

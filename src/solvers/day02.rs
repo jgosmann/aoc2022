@@ -161,7 +161,7 @@ impl Solver {
         let mut next_char = || {
             chars
                 .next()
-                .ok_or(InputParseError::new("line too short".into()))
+                .ok_or_else(|| InputParseError::new("line too short".into()))
         };
 
         let opponent = Shape::try_from(next_char()?)?;

@@ -88,10 +88,9 @@ impl<'a> WorkingDir<'a> {
     pub fn add_dir(&mut self, new_dir: Dir) {
         let current = self.current_mut();
         let dirs = &mut current.directories;
-        if dirs
+        if !dirs
             .iter()
-            .find(|existing_dir| existing_dir.name == new_dir.name)
-            .is_none()
+            .any(|existing_dir| existing_dir.name == new_dir.name)
         {
             dirs.push(new_dir);
         }
@@ -159,14 +158,14 @@ impl AocSolver<'_, usize, usize> for Solver {
         let mut working_dir = WorkingDir::new(&mut root);
         for line in input.lines() {
             let line = line.trim();
-            if line == "" {
+            if line.is_empty() {
                 continue;
-            } else if line.starts_with("$ cd ") {
-                working_dir.cd(&line[5..].trim());
+            } else if let Some(name) = line.strip_prefix("$ cd ") {
+                working_dir.cd(name.trim());
             } else if line.starts_with("$ ls") {
                 // no op
-            } else if line.starts_with("dir ") {
-                working_dir.add_dir(Dir::new(line[4..].trim().into()));
+            } else if let Some(name) = line.strip_prefix("dir ") {
+                working_dir.add_dir(Dir::new(name.trim().into()));
             } else {
                 let split_idx = line
                     .find(' ')

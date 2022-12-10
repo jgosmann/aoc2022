@@ -65,7 +65,7 @@ fn main() -> anyhow::Result<()> {
     } else {
         for day in 1..=10 {
             solve_day(day)?;
-            println!("");
+            println!();
         }
     }
 

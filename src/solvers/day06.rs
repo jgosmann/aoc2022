@@ -15,7 +15,7 @@ impl AocSolver<'_, usize, usize> for Solver {
                 .as_bytes()
                 .iter()
                 .copied()
-                .filter(|&c| b'a' <= c && c <= b'z')
+                .filter(|c| (b'a'..=b'z').contains(c))
                 .map(|c| 1u32 << (c - b'a'))
                 .collect(),
         })

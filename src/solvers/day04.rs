@@ -13,18 +13,18 @@ impl<T: FromStr> TryFrom<&str> for Range<T> {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let mut parts = value.split('-');
-        return Ok(Self {
+        Ok(Self {
             lower_bound: parts
                 .next()
-                .ok_or(InputParseError::new("missing lower bound".into()))?
+                .ok_or_else(|| InputParseError::new("missing lower bound".into()))?
                 .parse::<T>()
                 .map_err(|_err| InputParseError::new("failed to parse lower bound".into()))?,
             upper_bound: parts
                 .next()
-                .ok_or(InputParseError::new("missing upper bound".into()))?
+                .ok_or_else(|| InputParseError::new("missing upper bound".into()))?
                 .parse::<T>()
                 .map_err(|_err| InputParseError::new("failed to parse upper bound".into()))?,
-        });
+        })
     }
 }
 

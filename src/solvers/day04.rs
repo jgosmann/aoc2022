@@ -45,7 +45,7 @@ pub struct Solver {
     range_pairs: Vec<(Range<u32>, Range<u32>)>,
 }
 
-impl AocSolver<usize> for Solver {
+impl AocSolver<usize, usize> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
     where
         Self: Sized,
@@ -110,6 +110,6 @@ mod tests {
             6-6,4-6
             2-6,4-8
         ";
-        test_example_input::<Solver, _>(input, 2, Some(4));
+        test_example_input::<Solver, _, _>(input, 2, Some(4));
     }
 }

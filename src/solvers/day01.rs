@@ -45,7 +45,7 @@ pub struct Solver {
     top_k_calories: TopK<CaloryCount, 3>,
 }
 
-impl AocSolver<u64> for Solver {
+impl AocSolver<u64, u64> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self> {
         let mut top_k_calories = TopK::new();
         let mut calories_carried: u64 = 0;
@@ -95,6 +95,6 @@ mod tests {
 
             10000
         ";
-        test_example_input::<Solver, _>(input, 24000, Some(45000));
+        test_example_input::<Solver, _, _>(input, 24000, Some(45000));
     }
 }

@@ -5,7 +5,7 @@ pub struct Solver {
     datastream: Vec<u32>,
 }
 
-impl AocSolver<usize> for Solver {
+impl AocSolver<usize, usize> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
     where
         Self: Sized,

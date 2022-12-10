@@ -1,9 +1,13 @@
 use super::base::AocSolver;
 
-pub fn test_example_input<Solver: AocSolver<T>, T: std::fmt::Debug + Eq>(
+pub fn test_example_input<
+    Solver: AocSolver<T1, T2>,
+    T1: std::fmt::Debug + Eq,
+    T2: std::fmt::Debug + Eq,
+>(
     input: &str,
-    part1_answer: T,
-    part2_answer: Option<T>,
+    part1_answer: T1,
+    part2_answer: Option<T2>,
 ) {
     let mut input = input.split('\n').map(String::from);
     let solver = Solver::new(&mut input).unwrap();

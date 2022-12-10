@@ -27,7 +27,7 @@ pub struct Solver {
     items: Vec<Vec<Item>>,
 }
 
-impl AocSolver<u64> for Solver {
+impl AocSolver<u64, u64> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
     where
         Self: Sized,
@@ -108,6 +108,6 @@ mod tests {
             ttgJtRGJQctTZtZT
             CrZsJsPPZsGzwwsLwLmpwMDw
         ";
-        test_example_input::<Solver, _>(input, 157, Some(70));
+        test_example_input::<Solver, _, _>(input, 157, Some(70));
     }
 }

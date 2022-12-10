@@ -49,7 +49,7 @@ pub struct Solver {
     tail_positions_part2: std::collections::BTreeSet<Pos>,
 }
 
-impl AocSolver<usize> for Solver {
+impl AocSolver<usize, usize> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
     where
         Self: Sized,
@@ -111,7 +111,7 @@ mod tests {
             L 5
             R 2\
         ";
-        test_example_input::<Solver, _>(input, 13, Some(1));
+        test_example_input::<Solver, _, _>(input, 13, Some(1));
     }
 
     #[test]

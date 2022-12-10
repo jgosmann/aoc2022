@@ -123,7 +123,7 @@ pub struct Solver {
     strategy_guide: StrategyGuide,
 }
 
-impl AocSolver<u64> for Solver {
+impl AocSolver<u64, u64> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self> {
         Ok(Self {
             strategy_guide: input
@@ -214,6 +214,6 @@ mod tests {
             B X
             C Z
         ";
-        test_example_input::<Solver, _>(input, 15, Some(12));
+        test_example_input::<Solver, _, _>(input, 15, Some(12));
     }
 }

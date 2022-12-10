@@ -9,7 +9,9 @@ use std::{
     marker::PhantomData,
 };
 
-use solvers::{base::AocSolver, day01, day02, day03, day04, day05, day06, day07, day08, day09};
+use solvers::{
+    base::AocSolver, day01, day02, day03, day04, day05, day06, day07, day08, day09, day10,
+};
 
 #[derive(Parser, Debug)]
 #[command(name = "aoc2022")]
@@ -24,12 +26,15 @@ trait SolveDisplayable {
     fn solve_part2(&self) -> anyhow::Result<Option<Box<dyn Display>>>;
 }
 
-struct DisplayDecorator<S: AocSolver<T>, T> {
+struct DisplayDecorator<S: AocSolver<T1, T2>, T1, T2> {
     solver: S,
-    answer_type: PhantomData<T>,
+    answer_type1: PhantomData<T1>,
+    answer_type2: PhantomData<T2>,
 }
 
-impl<S: AocSolver<T>, T: Display + 'static> SolveDisplayable for DisplayDecorator<S, T> {
+impl<S: AocSolver<T1, T2>, T1: Display + 'static, T2: Display + 'static> SolveDisplayable
+    for DisplayDecorator<S, T1, T2>
+{
     fn solve_part1(&self) -> anyhow::Result<Box<dyn Display>> {
         Ok(Box::new(self.solver.solve_part1()?))
     }
@@ -43,11 +48,12 @@ impl<S: AocSolver<T>, T: Display + 'static> SolveDisplayable for DisplayDecorato
     }
 }
 
-impl<S: AocSolver<T>, T> From<S> for DisplayDecorator<S, T> {
+impl<S: AocSolver<T1, T2>, T1, T2> From<S> for DisplayDecorator<S, T1, T2> {
     fn from(solver: S) -> Self {
         Self {
             solver,
-            answer_type: PhantomData,
+            answer_type1: PhantomData,
+            answer_type2: PhantomData,
         }
     }
 }
@@ -59,15 +65,16 @@ fn main() -> Result<(), anyhow::Error> {
     let mut input = stdin.lock().lines().map(Result::unwrap);
 
     let solver: Box<dyn SolveDisplayable> = match args.day {
-        1 => Box::<DisplayDecorator<_, _>>::new(day01::Solver::new(&mut input)?.into()),
-        2 => Box::<DisplayDecorator<_, _>>::new(day02::Solver::new(&mut input)?.into()),
-        3 => Box::<DisplayDecorator<_, _>>::new(day03::Solver::new(&mut input)?.into()),
-        4 => Box::<DisplayDecorator<_, _>>::new(day04::Solver::new(&mut input)?.into()),
-        5 => Box::<DisplayDecorator<_, _>>::new(day05::Solver::new(&mut input)?.into()),
-        6 => Box::<DisplayDecorator<_, _>>::new(day06::Solver::new(&mut input)?.into()),
-        7 => Box::<DisplayDecorator<_, _>>::new(day07::Solver::new(&mut input)?.into()),
-        8 => Box::<DisplayDecorator<_, _>>::new(day08::Solver::new(&mut input)?.into()),
-        9 => Box::<DisplayDecorator<_, _>>::new(day09::Solver::new(&mut input)?.into()),
+        1 => Box::<DisplayDecorator<_, _, _>>::new(day01::Solver::new(&mut input)?.into()),
+        2 => Box::<DisplayDecorator<_, _, _>>::new(day02::Solver::new(&mut input)?.into()),
+        3 => Box::<DisplayDecorator<_, _, _>>::new(day03::Solver::new(&mut input)?.into()),
+        4 => Box::<DisplayDecorator<_, _, _>>::new(day04::Solver::new(&mut input)?.into()),
+        5 => Box::<DisplayDecorator<_, _, _>>::new(day05::Solver::new(&mut input)?.into()),
+        6 => Box::<DisplayDecorator<_, _, _>>::new(day06::Solver::new(&mut input)?.into()),
+        7 => Box::<DisplayDecorator<_, _, _>>::new(day07::Solver::new(&mut input)?.into()),
+        8 => Box::<DisplayDecorator<_, _, _>>::new(day08::Solver::new(&mut input)?.into()),
+        9 => Box::<DisplayDecorator<_, _, _>>::new(day09::Solver::new(&mut input)?.into()),
+        10 => Box::<DisplayDecorator<_, _, _>>::new(day10::Solver::new(&mut input)?.into()),
         _ => panic!("invalid day"),
     };
 

@@ -89,7 +89,7 @@ pub struct Solver {
     moves: Vec<Move>,
 }
 
-impl AocSolver<String> for Solver {
+impl AocSolver<String, String> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self> {
         let lines: Vec<_> = input.collect();
         let stack_def: Vec<&[u8]> = lines
@@ -144,6 +144,6 @@ move 3 from 1 to 3
 move 2 from 2 to 1
 move 1 from 1 to 2
         ";
-        test_example_input::<Solver, _>(input, "CMZ".into(), Some("MCD".into()));
+        test_example_input::<Solver, _, _>(input, "CMZ".into(), Some("MCD".into()));
     }
 }

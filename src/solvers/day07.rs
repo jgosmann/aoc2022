@@ -150,7 +150,7 @@ pub struct Solver {
     root: Dir,
 }
 
-impl AocSolver<usize> for Solver {
+impl AocSolver<usize, usize> for Solver {
     fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
     where
         Self: Sized,
@@ -218,6 +218,6 @@ mod tests {
             5626152 d.ext
             7214296 k
         ";
-        test_example_input::<Solver, _>(input, 95437, Some(24933642));
+        test_example_input::<Solver, _, _>(input, 95437, Some(24933642));
     }
 }

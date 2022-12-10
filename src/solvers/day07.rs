@@ -150,14 +150,14 @@ pub struct Solver {
     root: Dir,
 }
 
-impl AocSolver<usize, usize> for Solver {
-    fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
+impl AocSolver<'_, usize, usize> for Solver {
+    fn new(input: &str) -> anyhow::Result<Self>
     where
         Self: Sized,
     {
         let mut root = Dir::new("".into());
         let mut working_dir = WorkingDir::new(&mut root);
-        for line in input {
+        for line in input.lines() {
             let line = line.trim();
             if line == "" {
                 continue;
@@ -193,31 +193,7 @@ mod tests {
 
     #[test]
     fn test_example() {
-        let input = "\
-            $ cd /
-            $ ls
-            dir a
-            14848514 b.txt
-            8504156 c.dat
-            dir d
-            $ cd a
-            $ ls
-            dir e
-            29116 f
-            2557 g
-            62596 h.lst
-            $ cd e
-            $ ls
-            584 i
-            $ cd ..
-            $ cd ..
-            $ cd d
-            $ ls
-            4060174 j
-            8033020 d.log
-            5626152 d.ext
-            7214296 k
-        ";
+        let input = include_str!("examples/day07");
         test_example_input::<Solver, _, _>(input, 95437, Some(24933642));
     }
 }

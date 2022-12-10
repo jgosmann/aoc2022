@@ -1,19 +1,17 @@
-use super::{base::AocSolver, error::InputParseError};
+use super::base::AocSolver;
 use anyhow::anyhow;
 
 pub struct Solver {
     datastream: Vec<u32>,
 }
 
-impl AocSolver<usize, usize> for Solver {
-    fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
+impl AocSolver<'_, usize, usize> for Solver {
+    fn new(input: &str) -> anyhow::Result<Self>
     where
         Self: Sized,
     {
         Ok(Self {
             datastream: input
-                .next()
-                .ok_or_else(|| InputParseError::new("missing input".into()))?
                 .as_bytes()
                 .iter()
                 .copied()
@@ -63,11 +61,7 @@ mod tests {
     #[case("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg\n", 10)]
     #[case("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw\n", 11)]
     fn test_part1(#[case] input: &str, #[case] answer: usize) {
-        let mut input_iter = vec![String::from(input)].into_iter();
-        assert_eq!(
-            Solver::new(&mut input_iter).unwrap().solve_part1().unwrap(),
-            answer
-        );
+        assert_eq!(Solver::new(input).unwrap().solve_part1().unwrap(), answer);
     }
 
     #[rstest]
@@ -77,9 +71,8 @@ mod tests {
     #[case("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg\n", 29)]
     #[case("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw\n", 26)]
     fn test_part2(#[case] input: &str, #[case] answer: usize) {
-        let mut input_iter = vec![String::from(input)].into_iter();
         assert_eq!(
-            Solver::new(&mut input_iter).unwrap().solve_part2().unwrap(),
+            Solver::new(input).unwrap().solve_part2().unwrap(),
             Some(answer)
         );
     }
@@ -97,8 +90,7 @@ mod bench {
     fn bench_part1(b: &mut Bencher) {
         let input = fs::read_to_string("./day6").unwrap();
         b.iter(|| {
-            let mut input_iter = vec![input.clone()].into_iter();
-            Solver::new(&mut input_iter).unwrap().solve_part1().unwrap();
+            Solver::new(&input).unwrap().solve_part1().unwrap();
         });
     }
 
@@ -106,8 +98,7 @@ mod bench {
     fn bench_part2(b: &mut Bencher) {
         let input = fs::read_to_string("./day6").unwrap();
         b.iter(|| {
-            let mut input_iter = vec![input.clone()].into_iter();
-            Solver::new(&mut input_iter).unwrap().solve_part2().unwrap();
+            Solver::new(&input).unwrap().solve_part2().unwrap();
         });
     }
 }

@@ -27,16 +27,18 @@ pub struct Solver {
     items: Vec<Vec<Item>>,
 }
 
-impl AocSolver<u64, u64> for Solver {
-    fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
+impl AocSolver<'_, u64, u64> for Solver {
+    fn new(input: &str) -> anyhow::Result<Self>
     where
         Self: Sized,
     {
         Ok(Self {
             items: input
+                .lines()
                 .map(|line| {
-                    line.trim()
-                        .bytes()
+                    line.as_bytes()
+                        .iter()
+                        .copied()
                         .map(Item::new)
                         .collect::<anyhow::Result<Vec<Item>>>()
                 })
@@ -100,14 +102,7 @@ mod tests {
 
     #[test]
     fn test_example() {
-        let input = "\
-            vJrwpWtwJgWrhcsFMMfFFhFp
-            jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
-            PmmdzqPrVvPwwTWBwg
-            wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
-            ttgJtRGJQctTZtZT
-            CrZsJsPPZsGzwwsLwLmpwMDw
-        ";
+        let input = include_str!("examples/day03");
         test_example_input::<Solver, _, _>(input, 157, Some(70));
     }
 }

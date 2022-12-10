@@ -1,29 +1,20 @@
 use super::base::AocSolver;
 
-pub struct Solver {
-    input: Vec<u8>,
+pub struct Solver<'a> {
+    input: &'a [u8],
     width: usize,
 }
 
-impl AocSolver<usize, usize> for Solver {
-    fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
+impl<'a> AocSolver<'a, usize, usize> for Solver<'a> {
+    fn new(input: &'a str) -> anyhow::Result<Self>
     where
         Self: Sized,
     {
-        let mut input = input
-            .map(|line| String::from(line.trim()))
-            .collect::<Vec<String>>()
-            .join("\n")
-            .as_bytes()
-            .to_vec();
-        input.push(b'\n');
-        let width = input
-            .iter()
-            .enumerate()
-            .find(|(_, &c)| c == b'\n')
-            .map(|(i, _)| i + 1)
-            .unwrap_or(input.len());
-        Ok(Self { input, width })
+        let width = input.find('\n').map(|i| i + 1).unwrap_or(input.len());
+        Ok(Self {
+            input: input.as_bytes(),
+            width,
+        })
     }
 
     fn solve_part1(&self) -> anyhow::Result<usize> {
@@ -98,9 +89,9 @@ impl AocSolver<usize, usize> for Solver {
     }
 }
 
-impl Solver {
+impl<'a> Solver<'a> {
     fn height(&self) -> usize {
-        self.input.len() / self.width
+        (self.input.len() + self.width - 1) / self.width
     }
 
     fn evaluate_tree_house_spot(&self, pos: (usize, usize)) -> usize {
@@ -136,13 +127,7 @@ mod tests {
 
     #[test]
     fn test_example() {
-        let input = "\
-            30373
-            25512
-            65332
-            33549
-            35390
-        ";
+        let input = include_str!("examples/day08");
         test_example_input::<Solver, _, _>(input, 21, Some(8));
     }
 }

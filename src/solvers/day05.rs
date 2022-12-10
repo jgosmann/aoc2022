@@ -13,7 +13,7 @@ impl TryFrom<&str> for Move {
     type Error = InputParseError;
 
     fn try_from(line: &str) -> Result<Self, Self::Error> {
-        let mut parts = line.split(' ');
+        let mut parts = line.split_ascii_whitespace();
         let mut next_part = || {
             parts
                 .next()
@@ -89,20 +89,19 @@ pub struct Solver {
     moves: Vec<Move>,
 }
 
-impl AocSolver<String, String> for Solver {
-    fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self> {
-        let lines: Vec<_> = input.collect();
-        let stack_def: Vec<&[u8]> = lines
-            .iter()
-            .take_while(|line| !line.trim().is_empty())
-            .map(|line| line.as_bytes())
+impl AocSolver<'_, String, String> for Solver {
+    fn new(input: &str) -> anyhow::Result<Self> {
+        let stack_def: Vec<&[u8]> = input
+            .lines()
+            .take_while(|line| !line.is_empty())
+            .map(str::as_bytes)
             .collect();
-        let moves = lines
-            .iter()
-            .skip_while(|line| !line.trim().is_empty())
-            .skip_while(|line| line.trim().is_empty())
-            .filter(|line| !line.trim().is_empty())
-            .map(|line| Move::try_from(line.trim()))
+        let moves = input
+            .lines()
+            .skip_while(|line| !line.is_empty())
+            .skip_while(|line| line.is_empty())
+            .filter(|line| !line.is_empty())
+            .map(|line| Move::try_from(line))
             .collect::<Result<Vec<Move>, _>>()?;
         Ok(Self {
             stacks: Stacks::try_from(&stack_def[0..stack_def.len() - 1])?,
@@ -134,16 +133,7 @@ mod tests {
 
     #[test]
     fn test_example() {
-        let input = "    [D]    
-[N] [C]    
-[Z] [M] [P]
- 1   2   3 
-
-move 1 from 2 to 1
-move 3 from 1 to 3
-move 2 from 2 to 1
-move 1 from 1 to 2
-        ";
+        let input = include_str!("examples/day05");
         test_example_input::<Solver, _, _>(input, "CMZ".into(), Some("MCD".into()));
     }
 }

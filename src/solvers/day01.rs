@@ -45,21 +45,21 @@ pub struct Solver {
     top_k_calories: TopK<CaloryCount, 3>,
 }
 
-impl AocSolver<u64, u64> for Solver {
-    fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self> {
+impl AocSolver<'_, u64, u64> for Solver {
+    fn new(input: &str) -> anyhow::Result<Self> {
         let mut top_k_calories = TopK::new();
         let mut calories_carried: u64 = 0;
 
-        for line in input {
+        for line in input.lines() {
             let line = line.trim();
             if line.is_empty() {
                 top_k_calories.push(calories_carried);
                 calories_carried = 0;
             } else {
-                println!("<{:?}>", line);
                 calories_carried += line.parse::<CaloryCount>().unwrap();
             }
         }
+        top_k_calories.push(calories_carried);
         Ok(Self { top_k_calories })
     }
 
@@ -79,22 +79,7 @@ mod tests {
 
     #[test]
     fn test_example() {
-        let input = "\
-            1000
-            2000
-            3000
-
-            4000
-
-            5000
-            6000
-
-            7000
-            8000
-            9000
-
-            10000
-        ";
+        let input = include_str!("examples/day01");
         test_example_input::<Solver, _, _>(input, 24000, Some(45000));
     }
 }

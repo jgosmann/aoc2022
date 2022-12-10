@@ -49,8 +49,8 @@ pub struct Solver {
     tail_positions_part2: std::collections::BTreeSet<Pos>,
 }
 
-impl AocSolver<usize, usize> for Solver {
-    fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
+impl AocSolver<'_, usize, usize> for Solver {
+    fn new(input: &str) -> anyhow::Result<Self>
     where
         Self: Sized,
     {
@@ -59,8 +59,8 @@ impl AocSolver<usize, usize> for Solver {
         let mut tail_positions_part1 = std::collections::BTreeSet::new();
         let mut tail_positions_part2 = std::collections::BTreeSet::new();
 
-        for line in input {
-            let mut split_iter = line.trim().split(' ');
+        for line in input.lines() {
+            let mut split_iter = line.split_ascii_whitespace();
             let direction = parse_direction(
                 split_iter
                     .next()
@@ -101,33 +101,14 @@ mod tests {
 
     #[test]
     fn test_example() {
-        let input = "\
-            R 4
-            U 4
-            L 3
-            D 1
-            R 4
-            D 1
-            L 5
-            R 2\
-        ";
+        let input = include_str!("examples/day09");
         test_example_input::<Solver, _, _>(input, 13, Some(1));
     }
 
     #[test]
     fn test_larger_example() {
-        let input = "\
-            R 5
-            U 8
-            L 8
-            D 3
-            R 17
-            D 10
-            L 25
-            U 20\
-        ";
-        let mut input = input.split('\n').map(String::from);
-        let solver = Solver::new(&mut input).unwrap();
+        let input = include_str!("examples/day09-large");
+        let solver = Solver::new(input).unwrap();
         assert_eq!(solver.solve_part2().unwrap(), Some(36));
     }
 }

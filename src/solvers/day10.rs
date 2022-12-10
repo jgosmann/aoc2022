@@ -83,14 +83,14 @@ pub struct Solver {
     cpu: Cpu,
 }
 
-impl AocSolver<i64, String> for Solver {
-    fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
+impl AocSolver<'_, i64, String> for Solver {
+    fn new(input: &str) -> anyhow::Result<Self>
     where
         Self: Sized,
     {
         let mut cpu = Cpu::new();
-        for line in input {
-            let instruction = Instruction::try_from(line.as_str())?;
+        for line in input.lines() {
+            let instruction = Instruction::try_from(line)?;
             cpu.process(instruction);
         }
         Ok(Self { cpu })

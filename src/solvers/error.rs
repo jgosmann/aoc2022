@@ -1,4 +1,4 @@
-use std::{fmt::Display, num::ParseIntError};
+use std::{fmt::Display, num::ParseIntError, str::Utf8Error};
 
 #[derive(Debug)]
 pub struct InputParseError {
@@ -8,6 +8,12 @@ pub struct InputParseError {
 impl InputParseError {
     pub fn new(message: String) -> Self {
         Self { message }
+    }
+
+    fn from_source<Err: std::error::Error>(err: Err) -> Self {
+        Self {
+            message: err.to_string(),
+        }
     }
 }
 
@@ -21,6 +27,12 @@ impl std::error::Error for InputParseError {}
 
 impl From<ParseIntError> for InputParseError {
     fn from(err: ParseIntError) -> Self {
-        Self::new(err.to_string())
+        Self::from_source(err)
+    }
+}
+
+impl From<Utf8Error> for InputParseError {
+    fn from(err: Utf8Error) -> Self {
+        Self::from_source(err)
     }
 }

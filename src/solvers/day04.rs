@@ -45,15 +45,15 @@ pub struct Solver {
     range_pairs: Vec<(Range<u32>, Range<u32>)>,
 }
 
-impl AocSolver<usize, usize> for Solver {
-    fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self>
+impl AocSolver<'_, usize, usize> for Solver {
+    fn new(input: &str) -> anyhow::Result<Self>
     where
         Self: Sized,
     {
         Ok(Self {
             range_pairs: input
+                .lines()
                 .filter_map(|line| {
-                    let line = line.trim();
                     if line.is_empty() {
                         return None;
                     }
@@ -102,14 +102,7 @@ mod tests {
 
     #[test]
     fn test_example() {
-        let input = "\
-            2-4,6-8
-            2-3,4-5
-            5-7,7-9
-            2-8,3-7
-            6-6,4-6
-            2-6,4-8
-        ";
+        let input = include_str!("examples/day04");
         test_example_input::<Solver, _, _>(input, 2, Some(4));
     }
 }

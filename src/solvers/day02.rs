@@ -1,5 +1,3 @@
-use std::str::Chars;
-
 use super::{base::AocSolver, error::InputParseError};
 
 #[derive(Clone, Copy, Debug)]
@@ -11,7 +9,7 @@ enum Shape {
 
 #[derive(Debug)]
 struct EnumParseError {
-    value: String,
+    value: u8,
     enum_name: &'static str,
 }
 
@@ -26,16 +24,16 @@ impl std::fmt::Display for EnumParseError {
 
 impl std::error::Error for EnumParseError {}
 
-impl TryFrom<char> for Shape {
+impl TryFrom<u8> for Shape {
     type Error = EnumParseError;
 
-    fn try_from(value: char) -> Result<Self, Self::Error> {
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
-            'A' | 'X' => Ok(Self::Rock),
-            'B' | 'Y' => Ok(Self::Paper),
-            'C' | 'Z' => Ok(Self::Scissors),
+            b'A' | b'X' => Ok(Self::Rock),
+            b'B' | b'Y' => Ok(Self::Paper),
+            b'C' | b'Z' => Ok(Self::Scissors),
             _ => Err(EnumParseError {
-                value: value.into(),
+                value,
                 enum_name: "Shape",
             }),
         }
@@ -84,16 +82,16 @@ impl Outcome {
     }
 }
 
-impl TryFrom<char> for Outcome {
+impl TryFrom<u8> for Outcome {
     type Error = EnumParseError;
 
-    fn try_from(value: char) -> Result<Self, Self::Error> {
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
-            'X' => Ok(Self::Lost),
-            'Y' => Ok(Self::Draw),
-            'Z' => Ok(Self::Won),
+            b'X' => Ok(Self::Lost),
+            b'Y' => Ok(Self::Draw),
+            b'Z' => Ok(Self::Won),
             _ => Err(EnumParseError {
-                value: value.into(),
+                value,
                 enum_name: "Outcome",
             }),
         }
@@ -116,23 +114,23 @@ impl Tally {
     }
 }
 
-type Instruction = (Shape, char);
+type Instruction = (Shape, u8);
 type StrategyGuide = Vec<Instruction>;
 
 pub struct Solver {
     strategy_guide: StrategyGuide,
 }
 
-impl AocSolver<u64, u64> for Solver {
-    fn new<Iter: Iterator<Item = String>>(input: &mut Iter) -> anyhow::Result<Self> {
+impl AocSolver<'_, u64, u64> for Solver {
+    fn new(input: &str) -> anyhow::Result<Self> {
         Ok(Self {
             strategy_guide: input
+                .lines()
                 .filter_map(|line| {
-                    let line = line.trim();
                     if line.is_empty() {
                         return None;
                     }
-                    Some(Self::parse_line(line.chars()))
+                    Some(Self::parse_line(line.as_bytes()))
                 })
                 .collect::<anyhow::Result<StrategyGuide>>()?,
         })
@@ -158,7 +156,8 @@ impl AocSolver<u64, u64> for Solver {
 }
 
 impl Solver {
-    fn parse_line(mut chars: Chars) -> anyhow::Result<Instruction> {
+    fn parse_line(line: &[u8]) -> anyhow::Result<Instruction> {
+        let mut chars = line.iter().copied();
         let mut next_char = || {
             chars
                 .next()
@@ -167,7 +166,7 @@ impl Solver {
 
         let opponent = Shape::try_from(next_char()?)?;
         if let Ok(char) = next_char() {
-            if char != ' ' {
+            if char != b' ' {
                 return Err(InputParseError::new("missing or invalid separator".into()).into());
             }
         }
@@ -209,11 +208,7 @@ mod tests {
 
     #[test]
     fn test_example() {
-        let input = "\
-            A Y
-            B X
-            C Z
-        ";
+        let input = include_str!("examples/day02");
         test_example_input::<Solver, _, _>(input, 15, Some(12));
     }
 }

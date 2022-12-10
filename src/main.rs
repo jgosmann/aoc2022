@@ -2,6 +2,7 @@
 
 mod solvers;
 
+use anyhow::Context;
 use clap::Parser;
 use std::{fmt::Display, fs, marker::PhantomData};
 
@@ -14,7 +15,7 @@ use solvers::{
 #[command(author = "Jan Gosmann <jan@hyper-world.de>")]
 #[command(about = "Solve Advent of Code 2022 puzzles.")]
 struct Args {
-    day: u8,
+    day: Option<u8>,
 }
 
 trait SolveDisplayable {
@@ -56,13 +57,26 @@ impl<'a, S: AocSolver<'a, T1, T2>, T1, T2> From<S> for DisplayDecorator<'a, S, T
     }
 }
 
-fn main() -> Result<(), anyhow::Error> {
+fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
-    //let stdin = io::stdin();
-    let input = fs::read_to_string("./day6")?;
+    if let Some(day) = args.day {
+        solve_day(day)?;
+    } else {
+        for day in 1..=10 {
+            solve_day(day)?;
+            println!("");
+        }
+    }
 
-    let solver: Box<dyn SolveDisplayable> = match args.day {
+    Ok(())
+}
+
+fn solve_day(day: u8) -> anyhow::Result<()> {
+    let input_file = format!("./day{:0>2}", day);
+    let input = fs::read_to_string(&input_file).context(input_file)?;
+
+    let solver: Box<dyn SolveDisplayable> = match day {
         1 => Box::<DisplayDecorator<_, _, _>>::new(day01::Solver::new(&input)?.into()),
         2 => Box::<DisplayDecorator<_, _, _>>::new(day02::Solver::new(&input)?.into()),
         3 => Box::<DisplayDecorator<_, _, _>>::new(day03::Solver::new(&input)?.into()),
@@ -76,6 +90,7 @@ fn main() -> Result<(), anyhow::Error> {
         _ => panic!("invalid day"),
     };
 
+    println!("Day {} ", day);
     println!("{}", solver.solve_part1()?);
     if let Some(part2) = solver.solve_part2()? {
         println!("{}", part2);

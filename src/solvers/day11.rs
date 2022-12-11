@@ -16,9 +16,9 @@ impl TryFrom<&str> for Operation {
         let operation = value
             .strip_prefix("new = old ")
             .ok_or_else(|| InputParseError::new("unsupported operation format".into()))?;
-        if let Some(summand) = operation.strip_prefix("+") {
+        if let Some(summand) = operation.strip_prefix('+') {
             Ok(Self::AddConst(summand.trim().parse()?))
-        } else if let Some(factor) = operation.strip_prefix("*") {
+        } else if let Some(factor) = operation.strip_prefix('*') {
             match factor.trim() {
                 "old" => Ok(Self::Square),
                 value => Ok(Self::MultiplyConst(value.parse()?)),

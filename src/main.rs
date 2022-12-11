@@ -5,7 +5,12 @@ mod solvers;
 use ansi_term::Style;
 use anyhow::Context;
 use clap::Parser;
-use std::{fmt::Display, fs, marker::PhantomData, time::Instant};
+use std::{
+    fmt::{Display, Write},
+    fs,
+    marker::PhantomData,
+    time::Instant,
+};
 
 use solvers::{
     base::AocSolver, day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11,
@@ -66,9 +71,7 @@ fn main() -> anyhow::Result<()> {
         solve_day(day)?;
     } else {
         for day in 1..=11 {
-            solve_day(day)?;
-            println!();
-            println!();
+            print!("{}\n", solve_day(day)?);
         }
     }
 
@@ -76,7 +79,52 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn solve_day(day: u8) -> anyhow::Result<()> {
+struct SolvedDay {
+    day: u8,
+    time_start: Instant,
+    time_read_finished: Instant,
+    time_preprocess_finished: Instant,
+    time_part1_solved: Instant,
+    time_part2_solved: Instant,
+    solution_part1: Box<dyn Display>,
+    solution_part2: Option<Box<dyn Display>>,
+}
+
+impl Display for SolvedDay {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Style::new()
+            .underline()
+            .bold()
+            .paint(format!("Day {}\n", self.day))
+            .fmt(f)?;
+        f.write_fmt(format_args!(
+            "Input read in {:?}\n",
+            self.time_read_finished.duration_since(self.time_start)
+        ))?;
+        f.write_fmt(format_args!(
+            "Preprocessing finished in {:?}\n\n",
+            self.time_preprocess_finished
+                .duration_since(self.time_read_finished)
+        ))?;
+        f.write_fmt(format_args!(
+            "Solution part 1 ({:?}):\n{}\n\n",
+            self.time_part1_solved
+                .duration_since(self.time_preprocess_finished),
+            Style::new().bold().paint(self.solution_part1.to_string())
+        ))?;
+        if let Some(part2) = &self.solution_part2 {
+            f.write_fmt(format_args!(
+                "Solution part 2 ({:?}):\n{}\n\n",
+                self.time_part2_solved
+                    .duration_since(self.time_preprocess_finished),
+                Style::new().bold().paint(part2.to_string())
+            ))?;
+        }
+        Ok(())
+    }
+}
+
+fn solve_day(day: u8) -> anyhow::Result<SolvedDay> {
     let time_start = Instant::now();
     let input_file = format!("./day{:0>2}", day);
     let input = fs::read_to_string(&input_file).context(input_file)?;
@@ -104,36 +152,14 @@ fn solve_day(day: u8) -> anyhow::Result<()> {
     let solution_part2 = solver.solve_part2()?;
     let time_part2_solved = Instant::now();
 
-    println!(
-        "{}",
-        Style::new()
-            .underline()
-            .bold()
-            .paint(format!("Day {}", day))
-    );
-    println!(
-        "Input read in {:?}",
-        time_read_finished.duration_since(time_start)
-    );
-    println!(
-        "Preprocessing finished in {:?}",
-        time_preprocess_finished.duration_since(time_read_finished)
-    );
-
-    println!();
-    println!(
-        "Solution part 1 ({:?}):",
-        time_part1_solved.duration_since(time_preprocess_finished)
-    );
-    println!("{}", Style::new().bold().paint(solution_part1.to_string()));
-
-    println!();
-    if let Some(part2) = solution_part2 {
-        println!(
-            "Solution part 2 ({:?}):",
-            time_part2_solved.duration_since(time_preprocess_finished)
-        );
-        println!("{}", Style::new().bold().paint(part2.to_string()));
-    }
-    Ok(())
+    Ok(SolvedDay {
+        day,
+        time_start,
+        time_read_finished,
+        time_preprocess_finished,
+        time_part1_solved,
+        time_part2_solved,
+        solution_part1,
+        solution_part2,
+    })
 }

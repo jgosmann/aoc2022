@@ -2,20 +2,20 @@ use super::base::AocSolver;
 
 type CaloryCount = u64;
 
-struct TopK<T, const K: usize> {
+pub struct TopK<T, const K: usize> {
     size: usize,
     k_largest: [T; K],
 }
 
 impl<T: Copy + Default + PartialOrd, const K: usize> TopK<T, K> {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             size: 0,
             k_largest: [T::default(); K],
         }
     }
 
-    fn push(&mut self, value: T) {
+    pub fn push(&mut self, value: T) {
         let mut i = self.size;
         while i > 0 && self.k_largest[i - 1] <= value {
             if i < self.size {
@@ -32,11 +32,11 @@ impl<T: Copy + Default + PartialOrd, const K: usize> TopK<T, K> {
         }
     }
 
-    fn iter(&self) -> impl Iterator<Item = &T> {
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.k_largest.iter()
     }
 
-    fn peek(&self) -> Option<&T> {
+    pub fn peek(&self) -> Option<&T> {
         self.k_largest.get(0)
     }
 }

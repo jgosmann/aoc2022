@@ -7,7 +7,7 @@ use clap::Parser;
 use std::{fmt::Display, fs, marker::PhantomData};
 
 use solvers::{
-    base::AocSolver, day01, day02, day03, day04, day05, day06, day07, day08, day09, day10,
+    base::AocSolver, day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11,
 };
 
 #[derive(Parser, Debug)]
@@ -87,6 +87,7 @@ fn solve_day(day: u8) -> anyhow::Result<()> {
         8 => Box::<DisplayDecorator<_, _, _>>::new(day08::Solver::new(&input)?.into()),
         9 => Box::<DisplayDecorator<_, _, _>>::new(day09::Solver::new(&input)?.into()),
         10 => Box::<DisplayDecorator<_, _, _>>::new(day10::Solver::new(&input)?.into()),
+        11 => Box::<DisplayDecorator<_, _, _>>::new(day11::Solver::new(&input)?.into()),
         _ => panic!("invalid day"),
     };
 

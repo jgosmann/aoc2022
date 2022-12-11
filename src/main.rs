@@ -2,6 +2,7 @@
 
 mod solvers;
 
+use ansi_term::Style;
 use anyhow::Context;
 use clap::Parser;
 use std::{fmt::Display, fs, marker::PhantomData, time::Instant};
@@ -67,6 +68,7 @@ fn main() -> anyhow::Result<()> {
         for day in 1..=11 {
             solve_day(day)?;
             println!();
+            println!();
         }
     }
 
@@ -102,7 +104,13 @@ fn solve_day(day: u8) -> anyhow::Result<()> {
     let solution_part2 = solver.solve_part2()?;
     let time_part2_solved = Instant::now();
 
-    println!("Day {} ", day);
+    println!(
+        "{}",
+        Style::new()
+            .underline()
+            .bold()
+            .paint(format!("Day {}", day))
+    );
     println!(
         "Input read in {:?}",
         time_read_finished.duration_since(time_start)
@@ -111,17 +119,21 @@ fn solve_day(day: u8) -> anyhow::Result<()> {
         "Preprocessing finished in {:?}",
         time_preprocess_finished.duration_since(time_read_finished)
     );
+
+    println!();
     println!(
         "Solution part 1 ({:?}):",
         time_part1_solved.duration_since(time_preprocess_finished)
     );
-    println!("{}", solution_part1);
+    println!("{}", Style::new().bold().paint(solution_part1.to_string()));
+
+    println!();
     if let Some(part2) = solution_part2 {
         println!(
             "Solution part 2 ({:?}):",
             time_part2_solved.duration_since(time_preprocess_finished)
         );
-        println!("{}", part2);
+        println!("{}", Style::new().bold().paint(part2.to_string()));
     }
     Ok(())
 }

@@ -9,6 +9,7 @@ version = "0.1.0"
 bench = []
 
 [dependencies]
+ansi_term = "0.12.1"
 anyhow = "1.0"
 clap = {version = "4.0.29", features = ["derive"]}
 

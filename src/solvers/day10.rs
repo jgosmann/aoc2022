@@ -107,3 +107,19 @@ impl AocSolver<'_, i64, String> for Solver {
         Ok(Some(lines.join("\n")))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::solvers::test::test_example_input;
+
+    #[test]
+    fn test_example() {
+        let input = include_str!("examples/day10");
+        test_example_input::<Solver, _, _>(
+            input,
+            13140,
+            Some(include_str!("examples/result10-2").into()),
+        );
+    }
+}

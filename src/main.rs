@@ -4,7 +4,7 @@ mod solvers;
 
 use anyhow::Context;
 use clap::Parser;
-use std::{fmt::Display, fs, marker::PhantomData};
+use std::{fmt::Display, fs, marker::PhantomData, time::Instant};
 
 use solvers::{
     base::AocSolver, day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11,
@@ -58,6 +58,7 @@ impl<'a, S: AocSolver<'a, T1, T2>, T1, T2> From<S> for DisplayDecorator<'a, S, T
 }
 
 fn main() -> anyhow::Result<()> {
+    let time_start = Instant::now();
     let args = Args::parse();
 
     if let Some(day) = args.day {
@@ -69,12 +70,15 @@ fn main() -> anyhow::Result<()> {
         }
     }
 
+    println!("Took {:?}", time_start.elapsed());
     Ok(())
 }
 
 fn solve_day(day: u8) -> anyhow::Result<()> {
+    let time_start = Instant::now();
     let input_file = format!("./day{:0>2}", day);
     let input = fs::read_to_string(&input_file).context(input_file)?;
+    let time_read_finished = Instant::now();
 
     let solver: Box<dyn SolveDisplayable> = match day {
         1 => Box::<DisplayDecorator<_, _, _>>::new(day01::Solver::new(&input)?.into()),
@@ -90,10 +94,33 @@ fn solve_day(day: u8) -> anyhow::Result<()> {
         11 => Box::<DisplayDecorator<_, _, _>>::new(day11::Solver::new(&input)?.into()),
         _ => panic!("invalid day"),
     };
+    let time_preprocess_finished = Instant::now();
+
+    let solution_part1 = solver.solve_part1()?;
+    let time_part1_solved = Instant::now();
+
+    let solution_part2 = solver.solve_part2()?;
+    let time_part2_solved = Instant::now();
 
     println!("Day {} ", day);
-    println!("{}", solver.solve_part1()?);
-    if let Some(part2) = solver.solve_part2()? {
+    println!(
+        "Input read in {:?}",
+        time_read_finished.duration_since(time_start)
+    );
+    println!(
+        "Preprocessing finished in {:?}",
+        time_preprocess_finished.duration_since(time_read_finished)
+    );
+    println!(
+        "Solution part 1 ({:?}):",
+        time_part1_solved.duration_since(time_preprocess_finished)
+    );
+    println!("{}", solution_part1);
+    if let Some(part2) = solution_part2 {
+        println!(
+            "Solution part 2 ({:?}):",
+            time_part2_solved.duration_since(time_preprocess_finished)
+        );
         println!("{}", part2);
     }
     Ok(())

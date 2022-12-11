@@ -63,7 +63,7 @@ fn main() -> anyhow::Result<()> {
     if let Some(day) = args.day {
         solve_day(day)?;
     } else {
-        for day in 1..=10 {
+        for day in 1..=11 {
             solve_day(day)?;
             println!();
         }

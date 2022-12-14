@@ -68,6 +68,9 @@ impl Cave {
         let mut count = 0;
         while let Some(_) = self.drop_sand() {
             count += 1;
+            if self.map[self.point2idx(&(500, 0))] == Element::Sand {
+                break;
+            }
         }
         count
     }
@@ -98,7 +101,10 @@ impl Cave {
 }
 
 pub struct Solver {
-    solution_part1: usize,
+    lines: Vec<Line>,
+    min_x: usize,
+    max_x: usize,
+    max_y: usize,
 }
 
 impl<'a> AocSolver<'a, usize, usize> for Solver {
@@ -148,22 +154,35 @@ impl<'a> AocSolver<'a, usize, usize> for Solver {
             .max()
             .ok_or_else(|| InputParseError::new("no rock".into()))?;
 
-        let mut cave = Cave::new(min_x, max_x, max_y);
-        for line in lines {
-            cave.add_rock(&line);
-        }
-
-        let solution_part1 = cave.fill_with_sand();
-
-        Ok(Self { solution_part1 })
+        Ok(Self {
+            lines,
+            min_x,
+            max_x,
+            max_y,
+        })
     }
 
     fn solve_part1(&self) -> anyhow::Result<usize> {
-        Ok(self.solution_part1)
+        let mut cave = Cave::new(self.min_x, self.max_x, self.max_y);
+        for line in &self.lines {
+            cave.add_rock(line);
+        }
+
+        Ok(cave.fill_with_sand())
     }
 
     fn solve_part2(&self) -> anyhow::Result<Option<usize>> {
-        Ok(None)
+        let max_y = self.max_y + 2;
+        let mut cave = Cave::new(
+            self.min_x.min(500 - max_y),
+            self.max_x.max(500 + max_y),
+            max_y,
+        );
+        for line in &self.lines {
+            cave.add_rock(line)
+        }
+        cave.add_rock(&[(500 - max_y, max_y), (500 + max_y, max_y)]);
+        Ok(Some(cave.fill_with_sand()))
     }
 }
 
@@ -175,6 +194,6 @@ mod tests {
     #[test]
     fn test_example() {
         let input = include_str!("examples/day14");
-        test_example_input::<Solver, _, _>(input, 24, None);
+        test_example_input::<Solver, _, _>(input, 24, Some(93));
     }
 }

@@ -9,7 +9,7 @@ use std::{fmt::Display, marker::PhantomData, time::Instant};
 
 use solvers::{
     base::AocSolver, day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11,
-    day12, day13, day14,
+    day12, day13, day14, day15,
 };
 
 #[derive(Parser, Debug)]
@@ -18,6 +18,7 @@ use solvers::{
 #[command(about = "Solve Advent of Code 2022 puzzles.")]
 struct Args {
     day: Option<u8>,
+    input_path: Option<String>,
 }
 
 trait SolveDisplayable {
@@ -65,10 +66,10 @@ async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     if let Some(day) = args.day {
-        print!("{}", solve_day(day).await?);
+        print!("{}", solve_day(day, args.input_path).await?);
     } else {
-        let tasks: Vec<_> = (1..=14)
-            .map(|day| tokio::spawn(async move { solve_day(day).await }))
+        let tasks: Vec<_> = (1..=15)
+            .map(|day| tokio::spawn(async move { solve_day(day, None).await }))
             .collect();
         for task in tasks {
             print!("{}", task.await??);
@@ -124,9 +125,9 @@ impl Display for SolvedDay {
     }
 }
 
-async fn solve_day(day: u8) -> anyhow::Result<SolvedDay> {
+async fn solve_day(day: u8, input_path: Option<String>) -> anyhow::Result<SolvedDay> {
     let time_start = Instant::now();
-    let input_path = format!("./day{:0>2}", day);
+    let input_path = input_path.unwrap_or_else(|| format!("./day{:0>2}", day));
     let input = tokio::fs::read(&input_path).await.context(input_path)?;
     let input = std::str::from_utf8(&input)?;
     let time_read_finished = Instant::now();
@@ -146,6 +147,7 @@ async fn solve_day(day: u8) -> anyhow::Result<SolvedDay> {
         12 => Box::<DisplayDecorator<_, _, _>>::new(day12::Solver::new(&input)?.into()),
         13 => Box::<DisplayDecorator<_, _, _>>::new(day13::Solver::new(&input)?.into()),
         14 => Box::<DisplayDecorator<_, _, _>>::new(day14::Solver::new(&input)?.into()),
+        15 => Box::<DisplayDecorator<_, _, _>>::new(day15::Solver::new(&input)?.into()),
         _ => panic!("invalid day"),
     };
     let time_preprocess_finished = Instant::now();

@@ -6,7 +6,7 @@ use lazy_static::lazy_static;
 use super::{base::AocSolver, day01::TopK};
 use regex::Regex;
 
-type NodeId = [u8; 2];
+type NodeId = u8;
 
 #[derive(Clone, Debug)]
 struct Node {
@@ -61,9 +61,28 @@ impl Graph {
     }
 }
 
+struct NodeIdMap(HashMap<[u8; 2], u8>);
+
+impl NodeIdMap {
+    fn new() -> Self {
+        Self(HashMap::new())
+    }
+
+    fn convert(&mut self, value: [u8; 2]) -> u8 {
+        if let Some(&idx) = self.0.get(&value) {
+            idx
+        } else {
+            let idx = self.0.len() as u8;
+            self.0.insert(value, idx);
+            idx
+        }
+    }
+}
+
 pub struct Solver {
     nodes: HashMap<NodeId, Node>,
     graph: Graph,
+    start: NodeId,
 }
 
 impl<'a> AocSolver<'a, u64, u64> for Solver {
@@ -76,6 +95,7 @@ impl<'a> AocSolver<'a, u64, u64> for Solver {
                 .unwrap();
         let mut nodes = HashMap::new();
         let mut graph = Graph::new();
+        let mut node_ids = NodeIdMap::new();
         for line in input.split('\n') {
             if line.trim().is_empty() {
                 continue;
@@ -85,7 +105,7 @@ impl<'a> AocSolver<'a, u64, u64> for Solver {
                 .next()
                 .ok_or_else(|| InputParseError::new("invalid format".into()))?;
 
-            let node_id: NodeId = [matched[1].as_bytes()[0], matched[1].as_bytes()[1]];
+            let node_id = node_ids.convert([matched[1].as_bytes()[0], matched[1].as_bytes()[1]]);
             nodes.insert(
                 node_id,
                 Node {
@@ -94,26 +114,32 @@ impl<'a> AocSolver<'a, u64, u64> for Solver {
             );
             for edge in matched[3].split(", ") {
                 let to = edge.trim().as_bytes();
-                graph.add_edge(1, node_id, [to[0], to[1]]);
+                graph.add_edge(1, node_id, node_ids.convert([to[0], to[1]]));
             }
         }
+        let start = node_ids.convert([b'A', b'A']);
         for (node_id, node) in nodes.iter() {
-            if *node_id != [b'A', b'A'] && node.flow_rate == 0 {
+            if *node_id != start && node.flow_rate == 0 {
                 graph.disolve_node(*node_id)
             }
         }
-        Ok(Self { nodes, graph })
+        Ok(Self {
+            nodes,
+            graph,
+            start,
+        })
     }
 
     fn solve_part1(&self) -> anyhow::Result<u64> {
         let mut dp_max_flow = DpMaxFlow::new(&self.nodes, &self.graph);
-        let result = dp_max_flow.max_flow(30, [b'A', b'A'], &mut BTreeSet::new());
+        let result = dp_max_flow.max_flow(30, self.start, &mut BTreeSet::new());
+
         Ok(result)
     }
 
     fn solve_part2(&self) -> anyhow::Result<Option<u64>> {
         let mut dp_max_flow = DpMaxFlowElephant::new(&self.nodes, &self.graph);
-        let result = dp_max_flow.max_flow(26, 26, [b'A', b'A'], [b'A', b'A'], &mut BTreeSet::new());
+        let result = dp_max_flow.max_flow(26, 26, self.start, self.start, 0);
         Ok(Some(result))
     }
 }
@@ -179,7 +205,7 @@ impl<'a> DpMaxFlow<'a> {
 }
 
 struct DpMaxFlowElephant<'a> {
-    cache: HashMap<(usize, usize, NodeId, NodeId, BTreeSet<NodeId>), u64>,
+    cache: HashMap<(usize, usize, NodeId, NodeId, u32), u64>,
     nodes: &'a HashMap<NodeId, Node>,
     graph: &'a Graph,
     num_non_zero_flow_rates: usize,
@@ -201,12 +227,12 @@ impl<'a> DpMaxFlowElephant<'a> {
         steps_left_elephant: usize,
         node_id: NodeId,
         elephant_node_id: NodeId,
-        opened_valves: &mut BTreeSet<NodeId>,
+        opened_valves: u32,
     ) -> u64 {
         if steps_left <= 1 && steps_left_elephant <= 1 {
             return 0;
         }
-        if opened_valves.len() >= self.num_non_zero_flow_rates {
+        if opened_valves.count_ones() as usize >= self.num_non_zero_flow_rates {
             return 0;
         }
 
@@ -261,13 +287,13 @@ impl<'a> DpMaxFlowElephant<'a> {
         steps_left_elephant: usize,
         node_id: NodeId,
         elephant_node_id: NodeId,
-        opened_valves: &mut BTreeSet<NodeId>,
+        opened_valves: u32,
     ) -> u64 {
         let mut best = TopK::<u64, 1>::new();
 
         if let Some(node) = self.nodes.get(&node_id) {
-            if node.flow_rate > 0 && !opened_valves.contains(&node_id) {
-                opened_valves.insert(node_id);
+            if node.flow_rate > 0 && opened_valves & (1 << node_id) == 0 {
+                let opened_valves = opened_valves | (1 << node_id);
                 best.push(
                     node.flow_rate * (steps_left - 1) as u64
                         + self.max_flow(
@@ -278,7 +304,6 @@ impl<'a> DpMaxFlowElephant<'a> {
                             opened_valves,
                         ),
                 );
-                opened_valves.remove(&node_id);
             }
         }
 
@@ -303,13 +328,13 @@ impl<'a> DpMaxFlowElephant<'a> {
         steps_left_elephant: usize,
         node_id: NodeId,
         elephant_node_id: NodeId,
-        opened_valves: &mut BTreeSet<NodeId>,
+        opened_valves: u32,
     ) -> u64 {
         let mut best = TopK::<u64, 1>::new();
 
         if let Some(node) = self.nodes.get(&elephant_node_id) {
-            if node.flow_rate > 0 && !opened_valves.contains(&elephant_node_id) {
-                opened_valves.insert(elephant_node_id);
+            if node.flow_rate > 0 && opened_valves & (1 << elephant_node_id) == 0 {
+                let opened_valves = opened_valves | (1 << elephant_node_id);
                 best.push(
                     node.flow_rate * (steps_left_elephant - 1) as u64
                         + self.max_flow(
@@ -320,7 +345,6 @@ impl<'a> DpMaxFlowElephant<'a> {
                             opened_valves,
                         ),
                 );
-                opened_valves.remove(&elephant_node_id);
             }
         }
 

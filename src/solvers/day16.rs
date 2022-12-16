@@ -8,7 +8,7 @@ use regex::Regex;
 
 type NodeId = u8;
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 struct Node {
     flow_rate: u64,
 }
@@ -80,7 +80,7 @@ impl NodeIdMap {
 }
 
 pub struct Solver {
-    nodes: HashMap<NodeId, Node>,
+    nodes: Vec<Node>,
     graph: Graph,
     start: NodeId,
 }
@@ -124,7 +124,9 @@ impl<'a> AocSolver<'a, u64, u64> for Solver {
             }
         }
         Ok(Self {
-            nodes,
+            nodes: (0..nodes.len())
+                .map(|i| *nodes.get(&(i as u8)).unwrap())
+                .collect(),
             graph,
             start,
         })
@@ -146,18 +148,18 @@ impl<'a> AocSolver<'a, u64, u64> for Solver {
 
 struct DpMaxFlow<'a> {
     cache: HashMap<(usize, NodeId, BTreeSet<NodeId>), u64>,
-    nodes: &'a HashMap<NodeId, Node>,
+    nodes: &'a [Node],
     graph: &'a Graph,
     num_non_zero_flow_rates: usize,
 }
 
 impl<'a> DpMaxFlow<'a> {
-    fn new(nodes: &'a HashMap<NodeId, Node>, graph: &'a Graph) -> Self {
+    fn new(nodes: &'a [Node], graph: &'a Graph) -> Self {
         Self {
             cache: HashMap::new(),
             nodes,
             graph,
-            num_non_zero_flow_rates: nodes.values().filter(|node| node.flow_rate > 0).count(),
+            num_non_zero_flow_rates: nodes.iter().filter(|node| node.flow_rate > 0).count(),
         }
     }
 
@@ -181,15 +183,14 @@ impl<'a> DpMaxFlow<'a> {
 
         let mut best = TopK::<u64, 1>::new();
 
-        if let Some(node) = self.nodes.get(&node_id) {
-            if node.flow_rate > 0 && !opened_valves.contains(&node_id) {
-                opened_valves.insert(node_id);
-                best.push(
-                    node.flow_rate * (steps_left - 1) as u64
-                        + self.max_flow(steps_left - 1, node_id, opened_valves),
-                );
-                opened_valves.remove(&node_id);
-            }
+        let node = &self.nodes[node_id as usize];
+        if node.flow_rate > 0 && !opened_valves.contains(&node_id) {
+            opened_valves.insert(node_id);
+            best.push(
+                node.flow_rate * (steps_left - 1) as u64
+                    + self.max_flow(steps_left - 1, node_id, opened_valves),
+            );
+            opened_valves.remove(&node_id);
         }
 
         for &(dist, neighbour) in self.graph.neighbours(node_id) {
@@ -206,18 +207,18 @@ impl<'a> DpMaxFlow<'a> {
 
 struct DpMaxFlowElephant<'a> {
     cache: HashMap<(usize, usize, NodeId, NodeId, u32), u64>,
-    nodes: &'a HashMap<NodeId, Node>,
+    nodes: &'a [Node],
     graph: &'a Graph,
     num_non_zero_flow_rates: usize,
 }
 
 impl<'a> DpMaxFlowElephant<'a> {
-    fn new(nodes: &'a HashMap<NodeId, Node>, graph: &'a Graph) -> Self {
+    fn new(nodes: &'a [Node], graph: &'a Graph) -> Self {
         Self {
             cache: HashMap::new(),
             nodes,
             graph,
-            num_non_zero_flow_rates: nodes.values().filter(|node| node.flow_rate > 0).count(),
+            num_non_zero_flow_rates: nodes.iter().filter(|node| node.flow_rate > 0).count(),
         }
     }
 
@@ -257,28 +258,28 @@ impl<'a> DpMaxFlowElephant<'a> {
             return result;
         }
 
-        let mut best = TopK::<u64, 1>::new();
-        if steps_left <= steps_left_elephant && steps_left > 1 {
-            best.push(self.step_human(
+        let best = if steps_left <= steps_left_elephant && steps_left > 1 {
+            self.step_human(
                 steps_left,
                 steps_left_elephant,
                 node_id,
                 elephant_node_id,
                 opened_valves,
-            ));
+            )
         } else if steps_left_elephant > 1 {
-            best.push(self.step_elephant(
+            self.step_elephant(
                 steps_left,
                 steps_left_elephant,
                 node_id,
                 elephant_node_id,
                 opened_valves,
-            ));
-        }
+            )
+        } else {
+            0
+        };
 
-        let result = best.peek().copied().unwrap_or_default();
-        self.cache.insert(cache_key, result);
-        result
+        self.cache.insert(cache_key, best);
+        best
     }
 
     fn step_human(
@@ -291,20 +292,19 @@ impl<'a> DpMaxFlowElephant<'a> {
     ) -> u64 {
         let mut best = TopK::<u64, 1>::new();
 
-        if let Some(node) = self.nodes.get(&node_id) {
-            if node.flow_rate > 0 && opened_valves & (1 << node_id) == 0 {
-                let opened_valves = opened_valves | (1 << node_id);
-                best.push(
-                    node.flow_rate * (steps_left - 1) as u64
-                        + self.max_flow(
-                            steps_left - 1,
-                            steps_left_elephant,
-                            node_id,
-                            elephant_node_id,
-                            opened_valves,
-                        ),
-                );
-            }
+        let node = &self.nodes[node_id as usize];
+        if node.flow_rate > 0 && opened_valves & (1 << node_id) == 0 {
+            let opened_valves = opened_valves | (1 << node_id);
+            best.push(
+                node.flow_rate * (steps_left - 1) as u64
+                    + self.max_flow(
+                        steps_left - 1,
+                        steps_left_elephant,
+                        node_id,
+                        elephant_node_id,
+                        opened_valves,
+                    ),
+            );
         }
 
         for &(dist, neighbour) in self.graph.neighbours(node_id) {
@@ -332,20 +332,19 @@ impl<'a> DpMaxFlowElephant<'a> {
     ) -> u64 {
         let mut best = TopK::<u64, 1>::new();
 
-        if let Some(node) = self.nodes.get(&elephant_node_id) {
-            if node.flow_rate > 0 && opened_valves & (1 << elephant_node_id) == 0 {
-                let opened_valves = opened_valves | (1 << elephant_node_id);
-                best.push(
-                    node.flow_rate * (steps_left_elephant - 1) as u64
-                        + self.max_flow(
-                            steps_left,
-                            steps_left_elephant - 1,
-                            node_id,
-                            elephant_node_id,
-                            opened_valves,
-                        ),
-                );
-            }
+        let node = &self.nodes[elephant_node_id as usize];
+        if node.flow_rate > 0 && opened_valves & (1 << elephant_node_id) == 0 {
+            let opened_valves = opened_valves | (1 << elephant_node_id);
+            best.push(
+                node.flow_rate * (steps_left_elephant - 1) as u64
+                    + self.max_flow(
+                        steps_left,
+                        steps_left_elephant - 1,
+                        node_id,
+                        elephant_node_id,
+                        opened_valves,
+                    ),
+            );
         }
 
         for &(dist, neighbour) in self.graph.neighbours(elephant_node_id) {

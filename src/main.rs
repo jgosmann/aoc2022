@@ -9,7 +9,7 @@ use std::{fmt::Display, marker::PhantomData, time::Instant};
 
 use solvers::{
     base::AocSolver, day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11,
-    day12, day13, day14, day15, day16, day17,
+    day12, day13, day14, day15, day16, day17, day18,
 };
 
 #[derive(Parser, Debug)]
@@ -68,7 +68,7 @@ async fn main() -> anyhow::Result<()> {
     if let Some(day) = args.day {
         print!("{}", solve_day(day, args.input_path).await?);
     } else {
-        let tasks: Vec<_> = (1..=17)
+        let tasks: Vec<_> = (1..=18)
             .map(|day| tokio::spawn(async move { solve_day(day, None).await }))
             .collect();
         for task in tasks {
@@ -150,6 +150,7 @@ async fn solve_day(day: u8, input_path: Option<String>) -> anyhow::Result<Solved
         15 => Box::<DisplayDecorator<_, _, _>>::new(day15::Solver::new(&input)?.into()),
         16 => Box::<DisplayDecorator<_, _, _>>::new(day16::Solver::new(&input)?.into()),
         17 => Box::<DisplayDecorator<_, _, _>>::new(day17::Solver::new(&input)?.into()),
+        18 => Box::<DisplayDecorator<_, _, _>>::new(day18::Solver::new(&input)?.into()),
         _ => panic!("invalid day"),
     };
     let time_preprocess_finished = Instant::now();

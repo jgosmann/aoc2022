@@ -243,7 +243,7 @@ impl<'a> DpMaxFlowElephant<'a> {
                 steps_left_elephant,
                 node_id,
                 elephant_node_id,
-                opened_valves.clone(),
+                opened_valves,
             )
         } else {
             (
@@ -251,7 +251,7 @@ impl<'a> DpMaxFlowElephant<'a> {
                 steps_left,
                 elephant_node_id,
                 node_id,
-                opened_valves.clone(),
+                opened_valves,
             )
         };
         if let Some(&result) = self.cache.get(&cache_key) {

@@ -95,7 +95,7 @@ impl<'a> Solver<'a> {
             pos: start,
         });
 
-        while to_visit.len() > 0 {
+        while !to_visit.is_empty() {
             let QueueItem { distance, pos } = to_visit.pop_front().unwrap();
             if self.grid.get(pos) == needle {
                 return Ok(distance);

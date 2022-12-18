@@ -51,7 +51,7 @@ fn parse_list(input: &str) -> ParseResult<Vec<Data>> {
 }
 
 fn parse_int(input: &str) -> ParseResult<u8> {
-    if let Some((prefix, _)) = input.split_once(|c: char| !c.is_digit(10)) {
+    if let Some((prefix, _)) = input.split_once(|c: char| !c.is_ascii_digit()) {
         Ok((prefix.parse()?, &input[prefix.len()..]))
     } else {
         Ok((input.parse()?, &input[input.len()..]))
@@ -59,7 +59,7 @@ fn parse_int(input: &str) -> ParseResult<u8> {
 }
 
 fn skip_char(input: &str, c: char) -> ParseResult<()> {
-    if input.chars().nth(0) == Some(c) {
+    if input.starts_with(c) {
         Ok(((), &input[1..]))
     } else {
         Err(InputParseError::new(format!("expected {}", c)))
@@ -76,15 +76,7 @@ fn skip_optional_char(input: &str, c: char) -> &str {
 
 fn has_right_order(left: &Data, right: &Data) -> Ordering {
     match (left, right) {
-        (Data::Int(left_value), Data::Int(right_value)) => {
-            if left_value == right_value {
-                Ordering::Equal
-            } else if left_value < right_value {
-                Ordering::Less
-            } else {
-                Ordering::Greater
-            }
-        }
+        (Data::Int(left_value), Data::Int(right_value)) => left_value.cmp(right_value),
         (Data::List(left_value), Data::List(right_value)) => {
             for i in 0..left_value.len().min(right_value.len()) {
                 match has_right_order(&left_value[i], &right_value[i]) {

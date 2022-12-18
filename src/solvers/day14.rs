@@ -66,7 +66,7 @@ impl Cave {
 
     pub fn fill_with_sand(&mut self) -> usize {
         let mut count = 0;
-        while let Some(_) = self.drop_sand() {
+        while self.drop_sand().is_some() {
             count += 1;
             if self.map[self.point2idx(&(500, 0))] == Element::Sand {
                 break;

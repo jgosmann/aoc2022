@@ -252,19 +252,19 @@ impl<'a> Solver<'a> {
                 let h1 = heights[heights.len() - 1];
                 let h2 = heights[heights.len() - cycles_count - 1];
                 let h3 = heights[heights.len() - 2 * cycles_count - 1];
-                if h1 - h2 == h2 - h3 {
-                    if (0..h1 - h2).all(|x| tetris.chamber[h2 + x] == tetris.chamber[h3 + x]) {
-                        let rocks_before_start = (cycle - 2 * cycles_count + 1) * cycle_size;
-                        let num_repeats =
-                            (1000000000000 - rocks_before_start) / (cycles_count * cycle_size);
-                        let remaining_rocks =
-                            (1000000000000 - rocks_before_start) % (cycles_count * cycle_size);
-                        let prev_height = tetris.tower_height();
-                        for _ in 0..remaining_rocks {
-                            tetris.drop_block();
-                        }
-                        return h3 + (h2 - h3) * num_repeats + tetris.tower_height() - prev_height;
+                if h1 - h2 == h2 - h3
+                    && (0..h1 - h2).all(|x| tetris.chamber[h2 + x] == tetris.chamber[h3 + x])
+                {
+                    let rocks_before_start = (cycle - 2 * cycles_count + 1) * cycle_size;
+                    let num_repeats =
+                        (1000000000000 - rocks_before_start) / (cycles_count * cycle_size);
+                    let remaining_rocks =
+                        (1000000000000 - rocks_before_start) % (cycles_count * cycle_size);
+                    let prev_height = tetris.tower_height();
+                    for _ in 0..remaining_rocks {
+                        tetris.drop_block();
                     }
+                    return h3 + (h2 - h3) * num_repeats + tetris.tower_height() - prev_height;
                 }
             }
             cycle += 1;

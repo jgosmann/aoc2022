@@ -118,17 +118,17 @@ impl Solver {
         let mut no_beacon_count: usize =
             intervals[0].len() - self.count_beacons_in_interval(intervals[0], row);
         let mut current_interval: Interval = intervals[0];
-        for i in 1..intervals.len() {
-            if intervals[i].end > current_interval.end {
-                if intervals[i].start > current_interval.end {
-                    no_beacon_count +=
-                        intervals[i].len() - self.count_beacons_in_interval(intervals[i], row);
-                    current_interval = intervals[i];
-                } else {
-                    let interval = Interval::new(current_interval.end + 1, intervals[i].end);
+        for interval in intervals {
+            if interval.end > current_interval.end {
+                if interval.start > current_interval.end {
                     no_beacon_count +=
                         interval.len() - self.count_beacons_in_interval(interval, row);
-                    current_interval.end = intervals[i].end;
+                    current_interval = interval;
+                } else {
+                    let interval = Interval::new(current_interval.end + 1, interval.end);
+                    no_beacon_count +=
+                        interval.len() - self.count_beacons_in_interval(interval, row);
+                    current_interval.end = interval.end;
                 }
             }
         }

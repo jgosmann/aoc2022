@@ -229,7 +229,7 @@ impl<'a> AocSolver<'a, usize, usize> for Solver {
             .blueprints
             .iter()
             .map(|blueprint| {
-                let mut maximizer = GeodeMaximizer::new(&blueprint);
+                let mut maximizer = GeodeMaximizer::new(blueprint);
                 blueprint.id * maximizer.maximize(24)
             })
             .sum())
@@ -241,7 +241,7 @@ impl<'a> AocSolver<'a, usize, usize> for Solver {
                 .iter()
                 .take(3)
                 .map(|blueprint| {
-                    let mut maximizer = GeodeMaximizer::new(&blueprint);
+                    let mut maximizer = GeodeMaximizer::new(blueprint);
                     maximizer.maximize(32)
                 })
                 .product(),
@@ -251,9 +251,9 @@ impl<'a> AocSolver<'a, usize, usize> for Solver {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     // too slow to run by default
+    // use super::*;
+
     // #[test]
     // fn test_example() {
     //     let input = include_str!("examples/day19");
